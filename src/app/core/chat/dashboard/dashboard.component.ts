@@ -13,6 +13,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messageContainer') private messageContainer!: ElementRef;
 
   isDarkMode = false;
+  isMobile = false;
+  showUserList = true;
   isOnline = navigator.onLine;
   currentUser: AppUser | null = null;
   availableUsers$: Observable<AppUser[]> | undefined;
@@ -42,6 +44,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.isDarkMode = false;
       document.documentElement.classList.remove('dark');
     }
+
+    this.checkMobile();
+    window.addEventListener('resize', () => this.checkMobile());
 
     this.authSubscription = this.authService.user$.pipe(
       filter(user => !!user), // Espera a que el usuario esté autenticado
@@ -74,6 +79,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     this.selectedChatUser = user;
+
+    if (this.isMobile) {
+      this.showUserList = false;
+    }
+
     this.isLoadingMessages = true;
     this.messages$ = undefined; // Limpiar mensajes antiguos
 
@@ -143,5 +153,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
+  }
+
+  checkMobile() {
+    this.isMobile = window.innerWidth < 768; // md breakpoint de Tailwind
+    if (!this.isMobile) {
+      this.showUserList = true; // Siempre mostrar lista en desktop
+    }
+  }
+
+  volverALista() {
+    this.showUserList = true;
+    this.selectedChatUser = null;
   }
 }
